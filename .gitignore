@@ -1,0 +1,5 @@
+*.csv*
+venv/
+*.xls
+*.xlsx
+*.html

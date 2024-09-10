@@ -1,0 +1,59 @@
+version: '3.5'
+
+x-common: &common
+  image: crawler-image
+  build:
+    context: .
+    dockerfile: ./crawler/Dockerfile
+  volumes:
+    - ./crawler:/app
+  networks:
+    - de_tai_bo_template
+  restart: unless-stopped
+
+services:
+  de_tai_bo_api_crawler_iso:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_iso
+    command: python3 main.py iso
+    ports:
+      - "${port_iso:-8001}:8000"
+
+  de_tai_bo_api_crawler_iec:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_iec
+    command: python3 main.py iec
+    ports:
+      - "${port_iec:-8002}:8000"
+
+  de_tai_bo_api_crawler_itu:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_itu
+    command: python3 main.py itu
+    ports:
+      - "${port_itu:-8003}:8000"
+
+  de_tai_bo_api_crawler_3gpp:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_3gpp
+    command: python3 main.py gpp
+    ports:
+      - "${port_3gpp:-8005}:8000"
+
+  de_tai_bo_api_crawler_etsi:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_etsi
+    command: python3 main.py etsi
+    ports:
+      - "${port_etsi:-8005}:8000"
+
+  de_tai_bo_api_crawler_mic:
+    <<: *common
+    container_name: de_tai_bo_api_crawler_mic
+    command: python3 main.py mic
+    ports:
+      - "${port_mic:-8006}:8000"
+
+networks:
+  de_tai_bo_template:
+    driver: bridge
