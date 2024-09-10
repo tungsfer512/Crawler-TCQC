@@ -7,8 +7,11 @@ import json
 import requests
 import os
 
+TMP_FILE = "./tmp/etsi.csv"
 
-def get_etsi_link():
+
+# Ham lay list subcategory
+def link_etsi():
     chrome_options = Options()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--headless")
@@ -46,15 +49,15 @@ def get_etsi_link():
             })
     return return_data
 
-
-def get_etsi_data(url):
+# Ham lay link tieu chuan
+def etsi(data):
     try:
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-dev-shm-usage")
         driver = webdriver.Chrome(options=chrome_options)
-        driver.get(url)
+        driver.get(data["link"])
         time.sleep(10)
         url_download = driver.execute_script(
             'var url=standardssearchGetURI("csv") + "&x=" + Date.now();return url;'
@@ -62,77 +65,80 @@ def get_etsi_data(url):
         response = requests.get(url_download)
         if response.status_code == 200:
             os.makedirs("./tmp", exist_ok=True)
-            with open("./tmp/etsi.csv", "wb") as file:
+            with open(TMP_FILE, "wb") as file:
                 file.write(response.content)
         else:
+            print("LOI TAI FILE")
             return []
+        with open(TMP_FILE, "r") as fin:
+            data = fin.read().splitlines(True)
+        with open(TMP_FILE, "w") as fout:
+            fout.writelines(data[1:])
         try:
             df = pd.read_csv(
-                "./tmp/etsi.csv",
+                TMP_FILE,
                 sep=";",
                 quotechar='"',
-                # skiprows=1,
-                usecols=[0, 1, 2, 3, 4, 5, 6, 7]
+                skiprows=1,
+                usecols=[0, 1, 2, 3, 4, 5, 6],
             )
-            print(df)
             df.columns = [
                 "id",
                 "code",
-                "name",
+                "title",
                 "status",
                 "link",
                 "file_link",
                 "description",
-                "keywords",
             ]
-            new_data = []
-            # json_data = df.to_json(orient="records")
-            # all_data = json.loads(json_data)
-            # for data in all_data:
-            #     data["nam_ban_hanh"] = int(data["so_hieu"][-8:-4])
-            #     new_data.append(data)
-            # os.remove("./tmp/etsi.csv")
-            return new_data
+            print(len(df))
+            json_data = df.to_json(orient="records")
+            std_links = json.loads(json_data)
+            # Can vao chi tiet tung trang va lay day du thong tin
+            
+            return std_links
         except Exception as e:
+            print(e)
             return []
     except Exception as e:
+        print(e)
         return []
 
-def get_data_from_link(link):
-    csv_url = get_etsi_data(link["link"])
-    if csv_url != None:
-        data = get_url(csv_url)
-        for i in data:
-            arr_res = []
-            arr_tree = [
-                {
-                    "key": "ETSI",
-                    "des": "ETSI - Producing globally applicable standards for ICT-enabled systems, applications & services deployed across all sectors of industry and society.",
-                }
-            ]
-            arr_tree.append({"key": link["sector"], "des": ""})
-            arr_tree.append({"key": link["type"], "des": ""})
-            arr_res.append(arr_tree)
-            i["tree"] = arr_res
-        return data
-    return []
+# def get_data_from_link(link):
+#     csv_url = get_etsi_data(link["link"])
+#     if csv_url != None:
+#         data = get_url(csv_url)
+#         for i in data:
+#             arr_res = []
+#             arr_tree = [
+#                 {
+#                     "key": "ETSI",
+#                     "des": "ETSI - Producing globally applicable standards for ICT-enabled systems, applications & services deployed across all sectors of industry and society.",
+#                 }
+#             ]
+#             arr_tree.append({"key": link["sector"], "des": ""})
+#             arr_tree.append({"key": link["type"], "des": ""})
+#             arr_res.append(arr_tree)
+#             i["tree"] = arr_res
+#         return data
+#     return []
 
 
-def get_all(linh_vuc, phan_nhom):
-    data_link = get_etsi_link()
-    all_data = []
-    for link in data_link:
-        if link["sector"] == linh_vuc and link["type"] == phan_nhom:
-            all_data.extend(get_data_from_link(link))
-    return all_data
+# def get_all(linh_vuc, phan_nhom):
+#     data_link = get_etsi_link()
+#     all_data = []
+#     for link in data_link:
+#         if link["sector"] == linh_vuc and link["type"] == phan_nhom:
+#             all_data.extend(get_data_from_link(link))
+#     return all_data
 
 
-def get_data(link):
-    all_data = []
-    link = json.loads(link.replace("'", '"'))
-    all_data.extend(get_data_from_link(link))
-    return all_data
+# def get_data(link):
+#     all_data = []
+#     link = json.loads(link.replace("'", '"'))
+#     all_data.extend(get_data_from_link(link))
+#     return all_data
 
 
-def get_all_link():
-    return get_etsi_link()
+# def get_all_link():
+#     return get_etsi_link()

@@ -110,7 +110,7 @@ def get_etsi_data(url):
     try:
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
-        # chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")
         chrome_options.add_argument("--disable-dev-shm-usage")
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(url)
@@ -147,24 +147,20 @@ def get_etsi_data(url):
                 "file_link",
                 "description",
             ]
-            print(df)
+            print(len(df))
             json_data = df.to_json(orient="records")
-            all_data = json.loads(json_data)
-            new_data = []
-            for data in all_data:
-                # data["date"] = int(data["code"][-8:-4])
-                new_data.append(data)
-            return new_data
+            std_links = json.loads(json_data)
+            return std_links
         except Exception as e:
             print(e)
             return []
     except Exception as e:
         print(e)
-        return None
+        return []
 
 
 print(
     get_etsi_data(
-        "https://www.etsi.org/standards#page=1&search=Broadband%2BSatellite%2BMultimedia&title=1&etsiNumber=1&content=0&version=0&onApproval=1&published=1&withdrawn=1&historical=1&isCurrent=1&superseded=1&startDate=1988-01-15&endDate=2024-09-10&harmonized=0&keyword=&TB=&stdType=&frequency=&mandate=&collection=&sort=1"
-    )
+        "https://www.etsi.org/standards#page=1&search=&title=1&etsiNumber=1&content=1&version=0&onApproval=1&published=1&withdrawn=1&historical=1&isCurrent=1&superseded=1&startDate=1988-01-15&endDate=2024-09-10&harmonized=0&keyword=&TB=&stdType=&frequency=&mandate=&collection=&sort=1"
+    )[:10]
 )
